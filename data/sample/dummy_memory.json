@@ -1,0 +1,14 @@
+{
+  "source": "Meterless_HMEM",
+  "status": "offline_sample",
+  "past_failures": [
+    {
+      "error": "Missing Pydantic validation on POST request.",
+      "solution": "Always define a Pydantic BaseModel for incoming JSON payloads."
+    },
+    {
+      "error": "Hardcoded database connection string.",
+      "solution": "Use python-dotenv and os.environ.get('DB_URL')."
+    }
+  ]
+}

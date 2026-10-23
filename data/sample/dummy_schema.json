@@ -1,0 +1,9 @@
+{
+  "source": "Zetaris_Corporate_Governance",
+  "status": "offline_sample",
+  "retrieved_rules": [
+    "RULE 1: All API endpoints must include API Key authentication in the header.",
+    "RULE 2: Database passwords must be loaded via os.getenv(), never hardcoded.",
+    "RULE 3: All audit scripts must log outputs in encrypted JSON format."
+  ]
+}

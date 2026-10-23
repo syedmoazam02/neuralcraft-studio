@@ -1,0 +1,10 @@
+{
+  "request_id": "req-101",
+  "task": "scaffold_api",
+  "prompt": "Build a secure FastAPI Customer Telemetry Ingestion endpoint. It needs to accept a JSON payload with user metrics, validate the data using Pydantic, and connect to a PostgreSQL database.",
+  "constraints": {
+    "framework": "FastAPI",
+    "database": "PostgreSQL",
+    "require_auth": true
+  }
+}
