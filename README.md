@@ -111,6 +111,50 @@ The **NeuralCraft Studio** backend is engineered for zero-trust operational safe
 
 ---
 
+## 🎯 Prompt Architecture & QA Evaluation Rubric (Role 4 — Syed Nawaz Ali)
+
+Designed and implemented by **Role 4 (Principal QA, Security Auditor & Prompt Engineer)**, the prompt engineering layer and evaluation rubric serve as the primary cognitive guardrails for the reasoning loop, ensuring zero hallucination, strict adherence to enterprise policies, and resilient self-healing execution.
+
+### 1. Hardened Production System Prompts (`app/prompts.py`)
+
+* **Research Agent (`RESEARCH_PROMPT`):** Enforces structured extraction of corporate compliance rules from Zetaris and past failure memories from Meterless H-MEM into concise, non-negotiable architectural constraints.
+* **Lead Architect (`ARCHITECT_PROMPT`):** Mandates production-grade system specifications with explicit sections (`## System Architecture`, `## Data Models`, `## Security & Compliance`, `## Component Modules`, `## Environment Variables`, `## Error Handling & Edge Cases`). Enforces zero hardcoded secrets (`os.getenv`), typed Python 3.11, and Pydantic v2 data models.
+* **Developer Agent (`DEVELOPER_PROMPT`):** Enforces bounded chunk generation within an 8,000-token window (Meterless Markovian carryover). Prohibits truncated code fences or `# TODO` stubs, and injects actionable QA audit feedback during retry passes.
+* **QA Evaluator (`QA_EVALUATOR_PROMPT`):** Audits candidate code against four rigorous dimensions and returns deterministic machine-parsable JSON for LangGraph conditional routing.
+
+### 2. Multi-Dimensional 10-Point QA Evaluation Rubric
+
+Every code generation pass is rigorously evaluated against a standardized 10-point scoring rubric across four critical dimensions:
+
+| Dimension | Points | Evaluation Focus | Passing Criteria |
+| :--- | :---: | :--- | :--- |
+| **Functional Accuracy** | **0 – 3** | Spec compliance, endpoint routing, and schema fulfillment. | No missing modules, full prompt compliance. |
+| **Security & Compliance** | **0 – 3** | Zero hardcoded credentials (`os.getenv`), Pydantic validation, least-privilege DB access. | Any hardcoded secret automatically scores 0 in this dimension. |
+| **Code Quality & Syntax** | **0 – 2** | Python 3.11 syntax validity, typed schemas, clean imports, bounded chunk fences. | Any syntax error automatically scores 0. |
+| **Robustness & Resilience** | **0 – 2** | Exception handling envelopes, graceful degradation, and edge-case handling. | Resilient against invalid payloads and API timeouts. |
+
+* **Deterministic Pass Threshold:** Code receives an `"approved"` status **only if the aggregate score is ≥ 7/10**, syntax is completely error-free, and zero hardcoded secrets exist.
+* **Actionable Remediation Envelope:** If rejected, the QA Evaluator outputs specific `required_fixes` and `detailed_feedback` items that are routed directly back into the Developer Agent's prompt for autonomous correction.
+
+### 3. Resilient JSON Output Parser (`parse_qa_response`)
+
+* **Markdown Fence Stripping:** Tolerates markdown code blocks (````json ... ````) and cleans trailing prose.
+* **Failsafe JSON Recovery:** Employs regex fallback to extract JSON structures if LLMs prepend conversational greetings.
+* **Self-Healing Fallback Guarantee:** In the event of completely unparsable LLM outputs, returns a safe fallback payload (`score: 0`, `status: "rejected"`) with actionable instructions to enforce schema compliance, preventing graph stalls.
+
+---
+
+## 👥 Team Contributors & Hackathon Roles
+
+| Role | Lead | Focus & Key Deliverables |
+| :--- | :--- | :--- |
+| **Role 1** | **Syed Muzzammil** | **Reasoning & LangGraph Lead:** Canonical state graph, cyclical self-healing workflow, dynamic retry routing, and `/run` orchestration. |
+| **Role 2** | **Mohammed** | **Data & Memory Lead:** Sponsor adapters (Zetaris SQL federated catalog & Meterless H-MEM episodic memory) with offline sample fallbacks. |
+| **Role 3** | **Syed Moazam** | **Backend & Infrastructure Lead:** FastAPI async API gateway (`0.0.0.0:8000`), Dockerization, and immutable JSONL audit trace logging (`logs/agent_trace.jsonl`). |
+| **Role 4** | **Syed Nawaz Ali** | **QA, Security & Prompts Lead:** Production system prompts, 10-point evaluation rubric, resilient JSON parser (`parse_qa_response`), and self-healing feedback generation. |
+
+---
+
 ## ⚡ Quickstart Deployment Command
 
 ```bash
