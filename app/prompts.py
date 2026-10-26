@@ -199,3 +199,5 @@ def parse_qa_response(raw_response: str) -> Dict[str, Any]:
                 "Ensure output strictly follows JSON schema without conversational prose."
             ],
         }
+
+# Author: Syed Nawaz Ali (@syednawazali01)
