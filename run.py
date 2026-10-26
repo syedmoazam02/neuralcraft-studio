@@ -22,13 +22,13 @@ def serve_dashboard():
         <title>NeuralCraft Studio — Reasoning Architecture Engine</title>
         <style>
             :root {
-                --bg-main: #06090e;
-                --bg-card: rgba(18, 22, 31, 0.75);
-                --bg-card-border: #1f293d;
-                --accent-blue: #00f0ff;
+                --bg-main: #04070d;
+                --bg-card: rgba(13, 17, 26, 0.75);
+                --bg-card-border: rgba(0, 240, 255, 0.15);
+                --accent-cyan: #00f0ff;
                 --accent-purple: #7000ff;
                 --accent-green: #00ff66;
-                --accent-yellow: #ffb700;
+                --accent-gold: #ffb700;
                 --text-main: #f0f4fc;
                 --text-muted: #64748b;
             }
@@ -40,36 +40,31 @@ def serve_dashboard():
                 padding: 24px;
                 min-height: 100vh;
                 background-image: 
-                    radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
-                    radial-gradient(circle at 85% 85%, rgba(112, 0, 255, 0.05) 0%, transparent 40%);
+                    radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(112, 0, 255, 0.08) 0%, transparent 40%);
             }
             .glass-panel {
                 background: var(--bg-card);
-                backdrop-filter: blur(12px);
+                backdrop-filter: blur(16px);
                 border: 1px solid var(--bg-card-border);
                 border-radius: 12px;
                 padding: 20px;
-                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
             }
             
-            /* Header Section */
-            .header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 24px;
-            }
+            /* Header */
+            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
             .brand { display: flex; align-items: center; gap: 14px; }
             .brand-logo {
-                width: 42px; height: 42px;
-                background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+                width: 44px; height: 44px;
+                background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
                 border-radius: 10px;
                 display: flex; align-items: center; justify-content: center;
-                font-size: 20px; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+                font-size: 22px; box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
             }
-            .brand-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+            .brand-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
             .track-tag {
-                background: rgba(0, 240, 255, 0.1); color: var(--accent-blue);
+                background: rgba(0, 240, 255, 0.1); color: var(--accent-cyan);
                 border: 1px solid rgba(0, 240, 255, 0.3);
                 padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;
             }
@@ -81,57 +76,53 @@ def serve_dashboard():
             .pulse-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); animation: pulse 1.5s infinite; }
             @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
 
-            /* Grid Layout */
-            .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; margin-bottom: 24px; }
-            
-            /* Node Pipeline Visualizer */
-            .pipeline-container { position: relative; padding: 24px 10px; }
+            /* Workflow Node Visualizer */
+            .pipeline-container { position: relative; padding: 24px 10px; margin-bottom: 24px; }
             .pipeline-nodes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; position: relative; z-index: 2; }
             .agent-card {
-                background: #0d121d; border: 1px solid var(--bg-card-border); border-radius: 10px; padding: 16px;
+                background: rgba(13, 18, 29, 0.9); border: 1px solid var(--bg-card-border); border-radius: 10px; padding: 16px;
                 text-align: center; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative;
             }
             .agent-card.active {
-                border-color: var(--accent-blue); box-shadow: 0 0 25px rgba(0, 240, 255, 0.3); transform: translateY(-4px); background: #121929;
+                border-color: var(--accent-cyan); box-shadow: 0 0 30px rgba(0, 240, 255, 0.4); transform: translateY(-4px); background: #121929;
             }
-            .agent-card.completed { border-color: var(--accent-green); box-shadow: 0 0 15px rgba(0, 255, 102, 0.15); }
-            .agent-icon { font-size: 24px; margin-bottom: 8px; }
+            .agent-card.completed { border-color: var(--accent-green); box-shadow: 0 0 15px rgba(0, 255, 102, 0.2); }
+            .agent-icon { font-size: 26px; margin-bottom: 8px; }
             .agent-name { font-size: 13px; font-weight: 700; color: #fff; }
             .agent-tech { font-size: 10px; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
 
-            /* SVG Beam Lines */
-            .svg-connector { position: absolute; top: 50%; left: 0; width: 100%; height: 4px; transform: translateY(-50%); z-index: 1; }
-
-            /* Action Control Bar */
+            /* Control Bar */
             .control-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
             .run-btn {
-                background: linear-gradient(135deg, #00f0ff, #7000ff);
-                color: #000; border: none; padding: 14px 28px; border-radius: 8px;
+                background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+                color: #000; border: none; padding: 14px 32px; border-radius: 8px;
                 font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-                cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+                cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
             }
-            .run-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0, 240, 255, 0.5); }
-            .run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+            .run-btn:hover { transform: translateY(-2px); box-shadow: 0 0 35px rgba(0, 240, 255, 0.6); }
+            .run-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
             
-            /* Metrics Sidebar */
-            .metrics-panel { display: flex; flex-direction: column; gap: 16px; }
-            .metric-box { background: #0c1017; border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 14px; }
-            .metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
-            .metric-value { font-size: 22px; font-weight: 800; color: var(--accent-blue); }
-
-            /* Workspace Split & Tabs */
+            /* Main Workspace Layout */
+            .main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; margin-bottom: 24px; }
+            
             .tabs-header { display: flex; gap: 12px; border-bottom: 1px solid var(--bg-card-border); padding-bottom: 12px; margin-bottom: 16px; }
             .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 13px; font-weight: 700; cursor: pointer; padding: 6px 14px; border-radius: 6px; transition: 0.2s; }
-            .tab-btn.active { color: var(--accent-blue); background: rgba(0, 240, 255, 0.1); }
+            .tab-btn.active { color: var(--accent-cyan); background: rgba(0, 240, 255, 0.1); }
             
             pre {
-                background: #080b11; border: 1px solid #1a2333; border-radius: 8px; padding: 16px;
+                background: #06090f; border: 1px solid #162032; border-radius: 8px; padding: 16px;
                 font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; line-height: 1.6;
                 color: #a5d6ff; height: 320px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
             }
-            
-            /* Terminal Window */
-            .terminal { background: #04060a; border: 1px solid #141c2b; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 11.5px; height: 160px; overflow-y: auto; color: #7ee787; }
+
+            /* Metrics Sidebar */
+            .metrics-panel { display: flex; flex-direction: column; gap: 16px; }
+            .metric-box { background: rgba(12, 16, 23, 0.8); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 16px; }
+            .metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+            .metric-value { font-size: 24px; font-weight: 800; color: var(--accent-cyan); }
+
+            /* Telemetry Terminal */
+            .terminal { background: #030508; border: 1px solid #141c2b; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 11.5px; height: 160px; overflow-y: auto; color: #7ee787; }
             .terminal-line { margin-bottom: 4px; display: flex; gap: 10px; }
             .terminal-timestamp { color: var(--text-muted); }
         </style>
@@ -156,8 +147,8 @@ def serve_dashboard():
             </div>
         </div>
 
-        <!-- Dynamic Visual Graph -->
-        <div class="glass-panel pipeline-container" style="margin-bottom: 24px;">
+        <!-- Node Pipeline -->
+        <div class="glass-panel pipeline-container">
             <div class="pipeline-nodes">
                 <div class="agent-card" id="card-research">
                     <div class="agent-icon">🔬</div>
@@ -187,7 +178,7 @@ def serve_dashboard():
             </div>
         </div>
 
-        <!-- Action Bar -->
+        <!-- Action Control Bar -->
         <div class="control-bar">
             <div>
                 <h3 style="font-size: 16px; font-weight: 700;">Execute Reasoning Pipeline</h3>
@@ -199,9 +190,8 @@ def serve_dashboard():
             </div>
         </div>
 
-        <!-- Main Workspace Grid -->
+        <!-- Main Grid Workspace -->
         <div class="main-grid">
-            <!-- Tabs & Artifact Inspection -->
             <div class="glass-panel">
                 <div class="tabs-header">
                     <button class="tab-btn active" onclick="switchTab('spec')">🏛️ Architect Spec</button>
@@ -213,28 +203,27 @@ def serve_dashboard():
                 <div id="tab-qa" style="display:none;"><pre id="viewQA" style="color: #d2a8ff;">// QA Audit Telemetry output will render here...</pre></div>
             </div>
 
-            <!-- Real-Time Metrics Sidebar -->
             <div class="metrics-panel">
                 <div class="glass-panel metric-box">
                     <div class="metric-label">QA Quality Score</div>
                     <div id="metric-score" class="metric-value" style="color: var(--accent-green);">-- / 10</div>
                 </div>
                 <div class="glass-panel metric-box">
-                    <div class="metric-label">Token Context Window</div>
+                    <div class="metric-label">Context Budget (Markovian)</div>
                     <div id="metric-tokens" class="metric-value">0 / 8,000</div>
                 </div>
                 <div class="glass-panel metric-box">
                     <div class="metric-label">Self-Healing Retries</div>
-                    <div id="metric-retries" class="metric-value" style="color: var(--accent-yellow);">0 Pass</div>
+                    <div id="metric-retries" class="metric-value" style="color: var(--accent-gold);">0 Pass</div>
                 </div>
                 <div class="glass-panel metric-box">
-                    <div class="metric-label">Gateway Status</div>
+                    <div class="metric-label">Gateway API Status</div>
                     <div id="metric-http" class="metric-value" style="font-size: 16px;">HTTP 200 OK</div>
                 </div>
             </div>
         </div>
 
-        <!-- Real-Time Trace Log Terminal -->
+        <!-- Telemetry Log Terminal -->
         <div class="glass-panel">
             <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">
                 📟 Real-Time Audit Telemetry Stream (logs/agent_trace.jsonl)
@@ -252,7 +241,7 @@ def serve_dashboard():
                 const ts = new Date().toISOString().substring(11, 19);
                 const line = document.createElement('div');
                 line.className = 'terminal-line';
-                line.innerHTML = `<span class="terminal-timestamp">[${ts}]</span> <strong style="color: var(--accent-blue);">${agent}</strong>: ${action} ➔ <span style="color: var(--accent-green);">${status}</span>`;
+                line.innerHTML = `<span class="terminal-timestamp">[${ts}]</span> <strong style="color: var(--accent-cyan);">${agent}</strong>: ${action} ➔ <span style="color: var(--accent-green);">${status}</span>`;
                 term.appendChild(line);
                 term.scrollTop = term.scrollHeight;
             }
@@ -279,23 +268,34 @@ def serve_dashboard():
                 return (str || "").replace(/^```(?:python|json)?\s*/i, "").replace(/\s*```$/i, "").trim();
             }
 
+            async function typeWriter(elementId, text, speed = 10) {
+                const el = document.getElementById(elementId);
+                el.innerText = "";
+                for (let i = 0; i < text.length; i += 4) {
+                    el.innerText += text.substring(i, i + 4);
+                    el.scrollTop = el.scrollHeight;
+                    await sleep(speed);
+                }
+                el.innerText = text;
+            }
+
             async function triggerReasoningEngine() {
                 const btn = document.getElementById('runBtn');
                 const status = document.getElementById('exec-status');
                 btn.disabled = true;
                 
                 status.innerText = "Status: Executing Agent Graph...";
-                status.style.color = "var(--accent-blue)";
+                status.style.color = "var(--accent-cyan)";
 
-                // Step 1: Research Agent
+                // Step 1: Research Node
                 setCard('research', 'active');
-                logTerminal('ResearchAgent', 'Querying Zetaris SQL & H-MEM Memory', 'SUCCESS');
+                logTerminal('ResearchAgent', 'Querying Zetaris SQL Catalog & Meterless H-MEM Memory', 'SUCCESS');
                 await sleep(700);
                 setCard('research', 'completed');
 
-                // Step 2: Architect Agent
+                // Step 2: Architect Node
                 setCard('architect', 'active');
-                logTerminal('LeadArchitect', 'Generating Pydantic v2 Architecture Spec', 'IN_PROGRESS');
+                logTerminal('LeadArchitect', 'Synthesizing Pydantic v2 Architecture Spec', 'IN_PROGRESS');
                 await sleep(600);
 
                 try {
@@ -312,22 +312,22 @@ def serve_dashboard():
                     const resData = await res.json();
                     const data = resData.data;
 
-                    document.getElementById('viewSpec').innerText = data.architect_spec || "N/A";
+                    await typeWriter('viewSpec', data.architect_spec || "N/A", 6);
                     logTerminal('LeadArchitect', 'Spec Generated Successfully', 'SUCCESS');
                     setCard('architect', 'completed');
 
-                    // Step 3: Developer Agent
+                    // Step 3: Developer Node
                     setCard('developer', 'active');
-                    logTerminal('DeveloperAgent', 'Synthesizing Bounded Python Code (Markovian Budget: 8000 Tokens)', 'IN_PROGRESS');
-                    await sleep(800);
+                    logTerminal('DeveloperAgent', 'Synthesizing Bounded Python Code (Markovian Window: 8,000 Tokens)', 'IN_PROGRESS');
+                    await sleep(600);
                     
                     const cleanCode = stripFences(data.generated_code);
-                    document.getElementById('viewCode').innerText = cleanCode;
+                    await typeWriter('viewCode', cleanCode, 8);
                     document.getElementById('metric-tokens').innerText = `${cleanCode.length * 2} / 8,000`;
                     logTerminal('DeveloperAgent', 'Code Scaffold Completed', 'SUCCESS');
                     setCard('developer', 'completed');
 
-                    // Step 4: QA Evaluator Agent
+                    // Step 4: QA Evaluator Node
                     setCard('qa', 'active');
                     logTerminal('QAEvaluator', 'Auditing Code against 10-Point Multi-Dimensional Rubric', 'AUDITING');
                     await sleep(700);
