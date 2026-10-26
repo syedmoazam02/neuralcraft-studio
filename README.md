@@ -1,7 +1,45 @@
 # NeuralCraft Studio
 **Open Agent Hackathon 2026 - Track 3: Reasoning Architecture**
 
-NeuralCraft Studio is an autonomous multi-agent creation engine that transforms a product idea into a fully scaffolded, verified codebase using a dynamic Planner-Executor-Evaluator loop.
+---
+
+## 🌟 About NeuralCraft Studio
+
+**NeuralCraft Studio** is an autonomous, self-healing multi-agent software engineering platform built for **Open Agent Hackathon 2026 — Track 3: Reasoning Architecture**.
+
+Traditional single-prompt code generators frequently hallucinate component boundaries, hardcode sensitive credentials, violate enterprise compliance rules, and repeat known architectural anti-patterns. NeuralCraft Studio overcomes these limitations by implementing a deterministic **4-agent cognitive reasoning engine** structured around a dynamic, stateful **Planner-Executor-Evaluator closed loop** orchestrated by **LangGraph**.
+
+### 🧠 Cognitive Reasoning Pipeline & Agent Roles
+
+NeuralCraft Studio decomposes complex software development into four coordinated reasoning stages:
+
+1. **🔬 Research & Governance Agent (Context Ingestion & Retrieval):**
+   - Interrogates **Zetaris** federated data networks to discover mandatory corporate compliance policies and database schemas.
+   - Mines past architectural failure post-mortems from **Meterless H-MEM** episodic memory to proactively inject anti-pattern warnings before system design begins.
+
+2. **🏛️ Lead Architect Agent (System Specification & Constraints):**
+   - Synthesizes user requirements, technical constraints, and governance policies into a rigorous, production-grade technical specification.
+   - Enforces non-negotiable enterprise constraints: modular layering (APIs, schemas, services, repositories), strict Pydantic v2 data models, and zero credential hardcoding (`os.getenv`).
+
+3. **💻 Developer Agent (Bounded Chunk Execution & Code Synthesis):**
+   - Synthesizes clean, executable, typed Python microservices adhering strictly to the architect's specification.
+   - Utilizes **Meterless Markovian** context-window compression and bounded file chunking (enforcing strict 8,000 token generation limits).
+   - Ingests actionable QA audit feedback and historical failure memories during retry passes to eliminate regressions.
+
+4. **🛡️ QA Evaluator & Security Auditor Agent (Self-Healing & Rubric Evaluation):**
+   - Subjects generated implementations to a rigorous 4-dimensional, 10-point evaluation rubric: **Functional Accuracy (0–3)**, **Security & Compliance (0–3)**, **Code Quality & Syntax (0–2)**, and **Robustness (0–2)**.
+   - Requires a strict threshold of **score ≥ 7/10** with zero syntax errors and zero hardcoded credentials to achieve `approved` status.
+   - Upon rejection, constructs structured, actionable remediation items that dynamically trigger the **LangGraph self-healing loop** back to the Developer Agent (bounded by `MAX_RETRIES`).
+
+### 🚀 Key Value Propositions
+
+* **Self-Healing Autonomy:** Eliminates human intervention by continuously auditing and refining code until specifications and security rubrics are satisfied.
+* **Episodic Memory Loop:** Retains institutional memory of past bugs across execution runs to ensure identical errors are never committed twice.
+* **Zero-Trust Enterprise Safety:** Enforces complete secret externalization, schema boundary validation, and sanitization of traces.
+* **Immutable Telemetry & Auditability:** Emits machine-parsable JSON Lines telemetry (`logs/agent_trace.jsonl`) capturing every transition, confidence rating, and retry state for deterministic judge inspection.
+* **100% Deterministic Air-Gapped Mode (`SAMPLE_MODE`):** Provides instant offline verification with realistic mock fixtures and zero external network latency.
+
+---
 
 ## Quick Start (Clean Clone Test)
 
