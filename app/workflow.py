@@ -3,20 +3,29 @@ import json
 from typing import TypedDict, List, Dict, Any
 
 from langgraph.graph import StateGraph, END
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
+# Role 2 Engine Adapters
 from app.engines.zetaris_client import fetch_corporate_rules
 from app.engines.meterless_hmem import fetch_past_failures
+
+# Role 4 Prompts & Helper Functions
 from app.prompts import (
+    RESEARCH_PROMPT,
     ARCHITECT_PROMPT,
     DEVELOPER_PROMPT,
     QA_EVALUATOR_PROMPT,
     parse_qa_response,
 )
+
+# Role 3 Audit Logger
 from app.utils.logger import trace
 
 
+# ---------------------------------------------------------------------------
+# 1. Canonical State Definition
+# ---------------------------------------------------------------------------
 class NeuralCraftState(TypedDict):
     request_id: str
     prompt: str
@@ -31,6 +40,9 @@ class NeuralCraftState(TypedDict):
     status: str
 
 
+# ---------------------------------------------------------------------------
+# 2. Model Initialization Helper
+# ---------------------------------------------------------------------------
 def get_llm(tier: str = "primary") -> ChatOpenAI:
     sample_mode = os.getenv("SAMPLE_MODE", "false").lower() == "true"
     if sample_mode:
@@ -53,6 +65,9 @@ def get_llm(tier: str = "primary") -> ChatOpenAI:
     )
 
 
+# ---------------------------------------------------------------------------
+# 3. Agent Execution Nodes
+# ---------------------------------------------------------------------------
 async def node_research(state: NeuralCraftState) -> Dict[str, Any]:
     prompt = state.get("prompt", "")
     rules = fetch_corporate_rules(query=prompt)
@@ -186,6 +201,9 @@ async def node_qa_evaluator(state: NeuralCraftState) -> Dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# 4. Conditional Loop Routing Logic
+# ---------------------------------------------------------------------------
 def route_after_qa(state: NeuralCraftState) -> str:
     score = state.get("qa_score", 0)
     retries = state.get("retry_count", 0)
@@ -199,18 +217,24 @@ def route_after_qa(state: NeuralCraftState) -> str:
     return "END"
 
 
+# ---------------------------------------------------------------------------
+# 5. StateGraph Assembly and Compilation
+# ---------------------------------------------------------------------------
 builder = StateGraph(NeuralCraftState)
 
+# Add Nodes
 builder.add_node("node_research", node_research)
 builder.add_node("node_architect", node_architect)
 builder.add_node("node_developer", node_developer)
 builder.add_node("node_qa_evaluator", node_qa_evaluator)
 
+# Add Sequential Edges
 builder.set_entry_point("node_research")
 builder.add_edge("node_research", "node_architect")
 builder.add_edge("node_architect", "node_developer")
 builder.add_edge("node_developer", "node_qa_evaluator")
 
+# Add Conditional Loop Edge
 builder.add_conditional_edges(
     "node_qa_evaluator",
     route_after_qa,
