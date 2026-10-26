@@ -32,6 +32,14 @@ def test_health_endpoint(client: TestClient) -> None:
     assert data.get("status") == "ok"
 
 
+def test_dashboard_endpoint(client: TestClient) -> None:
+    """Verify GET / returns 200 OK and serves visual HTML dashboard."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "NeuralCraft Studio" in response.text
+    assert "text/html" in response.headers.get("content-type", "")
+
+
 def test_run_endpoint_sample_mode(client: TestClient) -> None:
     """Verify POST /run accepts valid RunRequest payload and returns structured response."""
     payload = {
