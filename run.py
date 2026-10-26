@@ -49,13 +49,15 @@ async def run_agents(payload: RunRequest):
             input_summary={"request_id": payload.request_id, "task": payload.task},
             output_summary={"status": "invoking_langgraph"},
             target_agent="ResearchAgent",
+            confidence=1.0,
+            retry_count=0,
             status="success",
         )
 
         final_state = await app_graph.ainvoke(initial_state)
 
         return {
-            "status": "completed",
+            "status": "success",
             "request_id": final_state.get("request_id"),
             "data": {
                 "architect_spec": final_state.get("architect_spec"),
@@ -74,6 +76,8 @@ async def run_agents(payload: RunRequest):
             input_summary={"request_id": payload.request_id},
             output_summary={"error": str(e)},
             target_agent="END",
+            confidence=None,
+            retry_count=0,
             status="failed",
         )
         raise HTTPException(status_code=500, detail=f"Agent orchestration failed: {str(e)}")

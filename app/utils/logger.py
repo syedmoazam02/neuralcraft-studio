@@ -25,7 +25,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 # ── Resolve paths relative to project root ───────────────────────────────────
 _PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
@@ -42,12 +42,12 @@ def trace(
     *,
     agent_name: str,
     action: str,
-    input_summary: str,
-    output_summary: str,
-    target_agent: str,
-    confidence: Optional[float],
-    retry_count: int,
-    status: str,
+    input_summary: Any,
+    output_summary: Any,
+    target_agent: str = "none",
+    confidence: Optional[float] = None,
+    retry_count: int = 0,
+    status: str = "success",
 ) -> None:
     """
     Append a single structured JSON record to logs/agent_trace.jsonl.

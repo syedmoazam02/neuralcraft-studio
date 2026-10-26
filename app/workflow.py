@@ -79,6 +79,8 @@ async def node_research(state: NeuralCraftState) -> Dict[str, Any]:
         input_summary={"prompt": prompt[:60]},
         output_summary={"rules_count": len(rules), "failures_count": len(failures)},
         target_agent="LeadArchitect",
+        confidence=1.0,
+        retry_count=0,
         status="success",
     )
 
@@ -115,6 +117,8 @@ async def node_architect(state: NeuralCraftState) -> Dict[str, Any]:
         input_summary={"prompt": state.get("prompt", "")[:60]},
         output_summary={"spec_length": len(spec)},
         target_agent="DeveloperAgent",
+        confidence=0.85,
+        retry_count=0,
         status="success",
     )
 
@@ -152,6 +156,8 @@ async def node_developer(state: NeuralCraftState) -> Dict[str, Any]:
         input_summary={"retry_pass": current_retry},
         output_summary={"code_length": len(code)},
         target_agent="QAEvaluator",
+        confidence=0.85,
+        retry_count=current_retry,
         status="success",
     )
 
