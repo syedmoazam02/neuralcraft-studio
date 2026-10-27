@@ -1,6 +1,8 @@
 # --- Secrets & Environment ---
 .env
 *.env
+.env.*
+!.env.example
 
 # --- Python Virtual Environments ---
 .venv/
@@ -37,6 +39,3 @@ htmlcov/
 *.swp
 *.swo
 Thumbs.db
-
-# --- Docker ---
-*.dockerignore

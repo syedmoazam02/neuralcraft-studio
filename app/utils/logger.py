@@ -23,9 +23,14 @@ Each call appends one JSON line to logs/agent_trace.jsonl.
 from __future__ import annotations
 
 import json
+from threading import Lock
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
+
+from app.telemetry import enrich_record, publish_record
+
+_WRITE_LOCK = Lock()
 
 # ── Resolve paths relative to project root ───────────────────────────────────
 _PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
@@ -77,5 +82,8 @@ def trace(
         "status":         status,
     }
 
-    with _TRACE_FILE.open(mode="a", encoding="utf-8") as fh:
-        fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+    with _WRITE_LOCK:
+        enrich_record(record)
+        with _TRACE_FILE.open(mode="a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        publish_record(record)

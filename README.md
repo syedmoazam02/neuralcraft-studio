@@ -1,166 +1,112 @@
 # NeuralCraft Studio
-**Open Agent Hackathon 2026 - Track 3: Reasoning Architecture**
 
----
+**Open Agent Hackathon 2026 — Track 3: Reasoning Architecture**
 
-## 🌟 About NeuralCraft Studio
+A FastAPI and LangGraph prototype that researches constraints, creates a specification, generates code, and evaluates the result. The dashboard makes the workflow and its bounded revision loop visible.
 
-**NeuralCraft Studio** is an autonomous, self-healing multi-agent software engineering platform built for **Open Agent Hackathon 2026 — Track 3: Reasoning Architecture**.
+## Architecture
 
-Traditional single-prompt code generators frequently hallucinate component boundaries, hardcode sensitive credentials, violate enterprise compliance rules, and repeat known architectural anti-patterns. NeuralCraft Studio overcomes these limitations by implementing a deterministic **4-agent cognitive reasoning engine** structured around a dynamic, stateful **Planner-Executor-Evaluator closed loop** orchestrated by **LangGraph**.
-
-### 🧠 Cognitive Reasoning Pipeline & Agent Roles
-
-NeuralCraft Studio decomposes complex software development into four coordinated reasoning stages:
-
-1. **🔬 Research & Governance Agent (Context Ingestion & Retrieval):**
-   - Interrogates **Zetaris** federated data networks to discover mandatory corporate compliance policies and database schemas.
-   - Mines past architectural failure post-mortems from **Meterless H-MEM** episodic memory to proactively inject anti-pattern warnings before system design begins.
-
-2. **🏛️ Lead Architect Agent (System Specification & Constraints):**
-   - Synthesizes user requirements, technical constraints, and governance policies into a rigorous, production-grade technical specification.
-   - Enforces non-negotiable enterprise constraints: modular layering (APIs, schemas, services, repositories), strict Pydantic v2 data models, and zero credential hardcoding (`os.getenv`).
-
-3. **💻 Developer Agent (Bounded Chunk Execution & Code Synthesis):**
-   - Synthesizes clean, executable, typed Python microservices adhering strictly to the architect's specification.
-   - Utilizes **Meterless Markovian** context-window compression and bounded file chunking (enforcing strict 8,000 token generation limits).
-   - Ingests actionable QA audit feedback and historical failure memories during retry passes to eliminate regressions.
-
-4. **🛡️ QA Evaluator & Security Auditor Agent (Self-Healing & Rubric Evaluation):**
-   - Subjects generated implementations to a rigorous 4-dimensional, 10-point evaluation rubric: **Functional Accuracy (0–3)**, **Security & Compliance (0–3)**, **Code Quality & Syntax (0–2)**, and **Robustness (0–2)**.
-   - Requires a strict threshold of **score ≥ 7/10** with zero syntax errors and zero hardcoded credentials to achieve `approved` status.
-   - Upon rejection, constructs structured, actionable remediation items that dynamically trigger the **LangGraph self-healing loop** back to the Developer Agent (bounded by `MAX_RETRIES`).
-
-### 🚀 Key Value Propositions
-
-* **Self-Healing Autonomy:** Eliminates human intervention by continuously auditing and refining code until specifications and security rubrics are satisfied.
-* **Episodic Memory Loop:** Retains institutional memory of past bugs across execution runs to ensure identical errors are never committed twice.
-* **Zero-Trust Enterprise Safety:** Enforces complete secret externalization, schema boundary validation, and sanitization of traces.
-* **Immutable Telemetry & Auditability:** Emits machine-parsable JSON Lines telemetry (`logs/agent_trace.jsonl`) capturing every transition, confidence rating, and retry state for deterministic judge inspection.
-* **100% Deterministic Air-Gapped Mode (`SAMPLE_MODE`):** Provides instant offline verification with realistic mock fixtures and zero external network latency.
-
----
-
-## Quick Start (Clean Clone Test)
-
-### 1. Docker Execution (Recommended)
-```bash
-cp .env.example .env
-docker build -t neuralcraft-studio .
-docker run --rm -p 8000:8000 --env-file .env neuralcraft-studio
+```text
+Research → Architect → Developer → QA → Approved / Retry exhausted
+                         ↑         |
+                         └─ fixes ─┘
 ```
 
-### 2. Local Python Execution
+- Research retrieves corporate rules and previous failure examples through Zetaris and H-MEM adapters.
+- Architect creates a specification. Developer generates code and incorporates QA feedback on subsequent attempts.
+- QA evaluates code using the rubric in `app/prompts.py`. Approval requires both a score of at least **7/10** and an explicit `approved` status. A rejected result returns to Developer, up to **3 QA attempts / 2 revisions**.
+- The fifth dashboard card, **Self-healing**, visualizes this routing decision; it is not a fifth model invocation.
+
+`run.py` serves `app/templates/dashboard.html` and includes the routes in `app/api.py`. `app/workflow.py` owns graph execution. `app/telemetry.py` correlates audit events with a server-generated run ID.
+
+## Dashboard
+
+The responsive workspace includes light/dark themes, prompt templates, session history, an agent inspector, a command palette (`Ctrl/Cmd+K`), and build exports.
+
+- **Audit telemetry:** timestamped stage and routing events arrive through `POST /run/stream`. The JSONL download contains the displayed events for that run. Each event includes its run ID and sequence number. Public events omit raw prompts, generated code, adapter responses, and exception details.
+- **Markovian window:** the 8,000-token value is a design target. The meter shows the largest reported input-plus-output token count of a model call in the run. It does not sum the entire run into a context window. Missing provider usage is shown as unknown or partial. **Compression and a hard context limit are not implemented.**
+- **Output animation:** an optional typewriter reveal runs after the complete response arrives. It is not model token streaming; stage telemetry is streamed separately. Reduced-motion preferences are respected.
+- **Preview demo:** explicitly simulated events illustrate a rejected QA pass followed by a successful revision. The demo does not invoke models. Backend sample mode uses fixed fixtures and normally approves on its first pass.
+
+## Run locally
+
+Install the project dependencies in a virtual environment:
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Activate .venv using your shell's activation command.
 pip install -r requirements.txt
-cp .env.example .env
-python run.py
 ```
 
-### 3. API Usage
+Copy `.env.example` to `.env`, then configure sample mode or the provider settings. Load that file explicitly:
 
 ```bash
-curl -X POST http://localhost:8000/run \
-  -H "Content-Type: application/json" \
-  -d @input_examples/example_1_microservice.json
+python -m uvicorn run:app --env-file .env --host 127.0.0.1 --port 8000
 ```
 
-## Sponsor Technology Integration
+Open `http://127.0.0.1:8000`. `python run.py` also works when environment variables have already been set; it does not load `.env` itself.
 
-* **Zetaris (Data Layer):** The Research Agent queries the Zetaris REST API (`/sql-editor/sqls/run`) to fetch mandatory corporate governance rules and database schemas before architectural planning begins.
-* **Meterless H-MEM:** When the QA Evaluator rejects code, failure patterns are mined into H-MEM. The Developer Agent retrieves this memory on its retry pass to avoid repeating mistakes.
-* **Meterless Markovian:** The Developer Agent scaffolds multi-file architectures in bounded chunks (8000 token limit), using Markovian's 4-tier compression cascade to preserve carryover state without collapsing the context window.
-* **Cursor:** Used as the primary IDE for agent and backend development.
-* **NVIDIA:** NVIDIA's OpenAI-compatible endpoints (`meta/llama-3.1-405b-instruct`) are used for heavy agent reasoning tasks.
+For an offline fixture run in PowerShell:
 
-## Offline Mode (SAMPLE_MODE)
+```powershell
+$env:SAMPLE_MODE = 'true'
+python -m uvicorn run:app --host 127.0.0.1 --port 8000
+```
 
-To run the application without API keys or an internet connection, ensure `SAMPLE_MODE=true` is set in your `.env` file. This intercepts API calls and loads dummy data from `data/sample/`.
-
----
-
-## 🛡️ Backend & Infrastructure Architecture (Role 3)
-
-The **NeuralCraft Studio** backend is engineered for zero-trust operational safety, high-throughput asynchronous execution, and 100% deterministic judge evaluation. Built around Python 3.11, FastAPI, Uvicorn, and Docker, the infrastructure layer acts as the **Execution Guardian** for the multi-agent cognitive reasoning engine.
-
-### 1. Core Service Architecture & Gateway
-
-* **FastAPI Entrypoint (`run.py`):** Serves as the high-performance async API gateway, exposing standard REST endpoints (`GET /health` and `POST /run`).
-* **Universal Network Binding:** Configured with explicit `0.0.0.0` binding and configurable environment port injection (`PORT=8000`) for seamless container and cloud platform deployment.
-* **Deterministic Input Schema Validation:** Strictly validates all incoming JSON execution payloads against strong Pydantic request models (`TaskRequest`) before invoking agent state graphs.
-
-### 2. Operational Safety & Offline Isolation (`SAMPLE_MODE`)
-
-* **Deterministic Air-Gapped Evaluation:** Features an integrated `SAMPLE_MODE=true` environment guard that instantly bypasses live LLM endpoints and external network calls.
-* **Local Fallback Adapters:** Intercepts sponsor API queries (Zetaris SQL & Meterless H-MEM) during offline runs to serve local structured schema and memory payloads from `data/sample/`.
-* **Zero Secret Leakage:** Enforces complete secret externalization using `.env` environment variables and strictly sanitizes log outputs to prevent API keys or internal database URIs from appearing in traces.
-
-### 3. Real-Time Audit & Evidence Engine (`logs/agent_trace.jsonl`)
-
-* **Structured JSONL Telemetry (`app/utils/logger.py`):** Automatically logs all inter-agent transitions, state updates, routing decisions, confidence metrics, and retry counts into a machine-parsable JSON Lines audit trail.
-* **Verifiable Judge Evidence:** Provides immutable timestamped proof of agent reasoning loops, self-healing cycles, and safety fallbacks without relying on unstructured stdout console prints.
-
-### 4. Containerization & Production Readiness (`Dockerfile`)
-
-* **Lightweight Base Layer:** Built on `python:3.11-slim` to maintain a minimal container footprint (~200MB compressed).
-* **Layer Caching Optimization:** Explicitly separates dependency installation (`COPY requirements.txt`) from application code copying to achieve ultra-fast incremental Docker builds.
-* **Clean Context Guarding:** Utilizes a strict `.dockerignore` to exclude `.git`, virtual environments, local environment secrets (`.env`), and ephemeral log files from the container build context.
-
----
-
-## 🎯 Prompt Architecture & QA Evaluation Rubric (Role 4 — Syed Nawaz Ali)
-
-Designed and implemented by **Role 4 (Principal QA, Security Auditor & Prompt Engineer)**, the prompt engineering layer and evaluation rubric serve as the primary cognitive guardrails for the reasoning loop, ensuring zero hallucination, strict adherence to enterprise policies, and resilient self-healing execution.
-
-### 1. Hardened Production System Prompts (`app/prompts.py`)
-
-* **Research Agent (`RESEARCH_PROMPT`):** Enforces structured extraction of corporate compliance rules from Zetaris and past failure memories from Meterless H-MEM into concise, non-negotiable architectural constraints.
-* **Lead Architect (`ARCHITECT_PROMPT`):** Mandates production-grade system specifications with explicit sections (`## System Architecture`, `## Data Models`, `## Security & Compliance`, `## Component Modules`, `## Environment Variables`, `## Error Handling & Edge Cases`). Enforces zero hardcoded secrets (`os.getenv`), typed Python 3.11, and Pydantic v2 data models.
-* **Developer Agent (`DEVELOPER_PROMPT`):** Enforces bounded chunk generation within an 8,000-token window (Meterless Markovian carryover). Prohibits truncated code fences or `# TODO` stubs, and injects actionable QA audit feedback during retry passes.
-* **QA Evaluator (`QA_EVALUATOR_PROMPT`):** Audits candidate code against four rigorous dimensions and returns deterministic machine-parsable JSON for LangGraph conditional routing.
-
-### 2. Multi-Dimensional 10-Point QA Evaluation Rubric
-
-Every code generation pass is rigorously evaluated against a standardized 10-point scoring rubric across four critical dimensions:
-
-| Dimension | Points | Evaluation Focus | Passing Criteria |
-| :--- | :---: | :--- | :--- |
-| **Functional Accuracy** | **0 – 3** | Spec compliance, endpoint routing, and schema fulfillment. | No missing modules, full prompt compliance. |
-| **Security & Compliance** | **0 – 3** | Zero hardcoded credentials (`os.getenv`), Pydantic validation, least-privilege DB access. | Any hardcoded secret automatically scores 0 in this dimension. |
-| **Code Quality & Syntax** | **0 – 2** | Python 3.11 syntax validity, typed schemas, clean imports, bounded chunk fences. | Any syntax error automatically scores 0. |
-| **Robustness & Resilience** | **0 – 2** | Exception handling envelopes, graceful degradation, and edge-case handling. | Resilient against invalid payloads and API timeouts. |
-
-* **Deterministic Pass Threshold:** Code receives an `"approved"` status **only if the aggregate score is ≥ 7/10**, syntax is completely error-free, and zero hardcoded secrets exist.
-* **Actionable Remediation Envelope:** If rejected, the QA Evaluator outputs specific `required_fixes` and `detailed_feedback` items that are routed directly back into the Developer Agent's prompt for autonomous correction.
-
-### 3. Resilient JSON Output Parser (`parse_qa_response`)
-
-* **Markdown Fence Stripping:** Tolerates markdown code blocks (````json ... ````) and cleans trailing prose.
-* **Failsafe JSON Recovery:** Employs regex fallback to extract JSON structures if LLMs prepend conversational greetings.
-* **Self-Healing Fallback Guarantee:** In the event of completely unparsable LLM outputs, returns a safe fallback payload (`score: 0`, `status: "rejected"`) with actionable instructions to enforce schema compliance, preventing graph stalls.
-
----
-
-## 👥 Team Contributors & Hackathon Roles
-
-| Role | Lead | Focus & Key Deliverables |
-| :--- | :--- | :--- |
-| **Role 1** | **Syed Muzzammil** | **Reasoning & LangGraph Lead:** Canonical state graph, cyclical self-healing workflow, dynamic retry routing, and `/run` orchestration. |
-| **Role 2** | **Mohammed** | **Data & Memory Lead:** Sponsor adapters (Zetaris SQL federated catalog & Meterless H-MEM episodic memory) with offline sample fallbacks. |
-| **Role 3** | **Syed Moazam** | **Backend & Infrastructure Lead:** FastAPI async API gateway (`0.0.0.0:8000`), Dockerization, and immutable JSONL audit trace logging (`logs/agent_trace.jsonl`). |
-| **Role 4** | **Syed Nawaz Ali** | **QA, Security & Prompts Lead:** Production system prompts, 10-point evaluation rubric, resilient JSON parser (`parse_qa_response`), and self-healing feedback generation. |
-
----
-
-## ⚡ Quickstart Deployment Command
+For Docker:
 
 ```bash
-# 1. Build production image
 docker build -t neuralcraft-studio .
-
-# 2. Run container in offline SAMPLE_MODE
-docker run --rm -p 8000:8000 -e SAMPLE_MODE=true neuralcraft-studio
+docker run --rm -p 127.0.0.1:8000:8000 -e SAMPLE_MODE=true neuralcraft-studio
 ```
+
+Sample mode selects local fixtures. It is an application setting, not an operating-system network isolation boundary.
+
+## API
+
+- `GET /health`: process health, sample-mode flag, streaming capability, and reasoning settings. It does not verify provider connectivity.
+- `POST /run`: complete JSON response.
+- `POST /run/stream`: newline-delimited JSON (`application/x-ndjson`). Frames have type `event`, `heartbeat`, `result`, or `error`. An error after response headers is an error frame, not a new HTTP status. Disconnecting cancels the workflow task; an already running synchronous adapter request may finish in its worker thread.
+
+Both run routes accept:
+
+```json
+{
+  "request_id": "example-001",
+  "task": "generate_microservice",
+  "prompt": "Build a small FastAPI service with a health endpoint.",
+  "constraints": {}
+}
+```
+
+Request IDs and task names are bounded to 128 characters; prompts to 12,000 characters. The task field is descriptive; it does not select a separate graph. Responses include the specification, code, QA score and fixes, actual revision count, QA attempts, provider usage when available, and final status.
+
+Disk events append to `logs/agent_trace.jsonl`. The stream forwards an allowlisted metadata subset from the same logging path and isolates events between concurrent runs. It does not expose a shared-log browsing endpoint. Disk logs remain mutable and can include adapter summaries; protect and rotate them before production use. The file-write lock coordinates threads within one process, not multiple worker processes.
+
+## Verification
+
+```bash
+python -m pytest tests -q
+node tests/test_stream_decoder.cjs
+```
+
+Tests cover sample adapters, QA parsing, streamed events and log correlation, concurrent-run isolation, first-event delivery before completion, disconnect cancellation, bounded retries, explicit QA rejection, safe error frames, usage reporting, and input validation. The JavaScript check exercises the shipped decoder with split UTF-8 chunks, truncated streams, error frames, and malformed JSON. Tests use fixtures and mocks; they do not establish live-provider correctness or generated-code security.
+
+## Current limits and next infrastructure work
+
+1. Add authentication, rate and concurrency limits, request-wide deadlines, and bounded provider timeouts before exposing the service publicly.
+2. Add durable jobs, cancellation/status endpoints, and per-run persistence for work that must survive browser disconnects or process restarts.
+3. Execute generated-code checks in an isolated runner. Model-based QA is an assessment, not a syntax, functional, or security guarantee.
+4. Implement and test actual context budgeting/compression before describing the 8,000-token target as enforced. H-MEM currently retrieves examples; automatic writeback of new failures is not implemented.
+5. Pin and test dependencies on the deployment Python version; add CI, structured error diagnostics, log redaction/rotation, and multi-process-safe telemetry storage.
+
+Live model results are nondeterministic. Sponsor adapters and prompts are integration scaffolding, not evidence of enterprise compliance or production readiness.
+
+## Team contributors
+
+| Role | Lead | Focus |
+| --- | --- | --- |
+| Role 1 | Syed Muzzammil | LangGraph reasoning workflow, state and retry routing |
+| Role 2 | Mohammed | Zetaris and H-MEM adapters, sample fallbacks |
+| Role 3 | Syed Moazam | FastAPI gateway, Docker and JSONL audit logging |
+| Role 4 | Syed Nawaz Ali | System prompts, QA rubric, parser and feedback |
