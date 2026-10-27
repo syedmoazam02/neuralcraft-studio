@@ -28,19 +28,27 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+import os
+import tempfile
 from app.telemetry import enrich_record, publish_record
 
 _WRITE_LOCK = Lock()
 
-# ── Resolve paths relative to project root ───────────────────────────────────
+# ── Resolve paths relative to project root (or /tmp for serverless) ─────────
 _PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
-_LOGS_DIR: Path = _PROJECT_ROOT / "logs"
+if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+    _LOGS_DIR: Path = Path(tempfile.gettempdir()) / "logs"
+else:
+    _LOGS_DIR: Path = _PROJECT_ROOT / "logs"
 _TRACE_FILE: Path = _LOGS_DIR / "agent_trace.jsonl"
 
 
 def _ensure_logs_dir() -> None:
     """Create the logs/ directory if it does not already exist."""
-    _LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        _LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
 
 
 def trace(
@@ -85,6 +93,9 @@ def trace(
 
     with _WRITE_LOCK:
         enrich_record(record)
-        with _TRACE_FILE.open(mode="a", encoding="utf-8") as fh:
-            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        try:
+            with _TRACE_FILE.open(mode="a", encoding="utf-8") as fh:
+                fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        except OSError:
+            pass
         publish_record(record)
