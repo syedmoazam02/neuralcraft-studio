@@ -44,7 +44,7 @@ def public_event(record: dict) -> dict:
     """Never expose raw prompts, code, adapter summaries, or exception strings."""
     event = {key: record[key] for key in (
         "timestamp", "run_id", "sequence", "mode", "agent_name", "action",
-        "target_agent", "retry_count", "status",
+        "target_agent", "retry_count", "status", "level",
     ) if key in record}
     event["source"] = "backend"
     summary = record.get("output_summary")

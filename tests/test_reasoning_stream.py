@@ -79,6 +79,8 @@ def test_sample_stream_has_correlated_real_events_and_result():
     assert result["data"]["token_usage"]["peak_context_tokens"] is None
     disk = [json.loads(line) for line in logger._TRACE_FILE.read_text(encoding="utf-8").splitlines()]
     assert [row["sequence"] for row in disk] == [event["sequence"] for event in events]
+    assert [(row["level"], row["status"]) for row in disk] == [(event["level"], event["status"]) for event in events]
+    assert all(event["level"] == "INFO" for event in events)
 
 
 def test_rejected_high_score_retries_and_preserves_original_prompt(monkeypatch):
@@ -92,6 +94,7 @@ def test_rejected_high_score_retries_and_preserves_original_prompt(monkeypatch):
     assert all("original-request-marker" in prompt for prompt in model.qa_prompts)
     assert any(event["action"] == "retry_scheduled" and event["target_agent"] == "DeveloperAgent" for event in events)
     assert any(event["action"] == "loop_completed" for event in events)
+    assert all(event["level"] == "WARNING" for event in events if event["status"] in {"rejected", "retry_needed"})
     assert data["token_usage"]["measured_calls"] == 5
     assert data["token_usage"]["total_tokens"] == 250
     assert data["token_usage"]["peak_context_tokens"] == 50

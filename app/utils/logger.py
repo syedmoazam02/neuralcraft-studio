@@ -80,6 +80,7 @@ def trace(
         "confidence":     confidence,
         "retry_count":    retry_count,
         "status":         status,
+        "level":          "ERROR" if status in {"error", "failed"} else "WARNING" if status in {"rejected", "retry_needed", "retry_exhausted", "cancelled"} else "INFO",
     }
 
     with _WRITE_LOCK:

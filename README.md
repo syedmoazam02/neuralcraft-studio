@@ -81,7 +81,7 @@ Both run routes accept:
 
 Request IDs and task names are bounded to 128 characters; prompts to 12,000 characters. The task field is descriptive; it does not select a separate graph. Responses include the specification, code, QA score and fixes, actual revision count, QA attempts, provider usage when available, and final status.
 
-Disk events append to `logs/agent_trace.jsonl`. The stream forwards an allowlisted metadata subset from the same logging path and isolates events between concurrent runs. It does not expose a shared-log browsing endpoint. Disk logs remain mutable and can include adapter summaries; protect and rotate them before production use. The file-write lock coordinates threads within one process, not multiple worker processes.
+Disk events append to `logs/agent_trace.jsonl`. The stream forwards an allowlisted metadata subset from the same logging path and isolates events between concurrent runs. The bottom audit terminal shows the same timestamp, log level (`INFO`, `WARNING`, or `ERROR`), and workflow status as the file. Workflow statuses are not HTTP status codes. It does not expose a shared-log browsing endpoint. Disk logs remain mutable and can include adapter summaries; protect and rotate them before production use. The file-write lock coordinates threads within one process, not multiple worker processes.
 
 ## Verification
 
