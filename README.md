@@ -4,6 +4,8 @@
 
 A FastAPI and LangGraph prototype that researches constraints, creates a specification, generates code, and evaluates the result. The dashboard makes the workflow and its bounded revision loop visible.
 
+🌐 **Live Demo:** [https://neuralcraft-studio.vercel.app](https://neuralcraft-studio.vercel.app)
+
 ## Architecture
 
 ```text
