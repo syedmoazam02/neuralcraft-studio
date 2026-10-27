@@ -13,8 +13,13 @@ app.include_router(router)
 
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/index.html", response_class=HTMLResponse)
+@app.get("/api", response_class=HTMLResponse)
+@app.get("/api/", response_class=HTMLResponse)
 def serve_dashboard():
     dashboard = Path(__file__).resolve().parent / "app" / "templates" / "dashboard.html"
+    if dashboard.exists():
+        return HTMLResponse(content=dashboard.read_text(encoding="utf-8"))
     return FileResponse(dashboard, media_type="text/html")
 
 

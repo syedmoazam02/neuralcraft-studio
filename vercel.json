@@ -1,15 +1,22 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/api/index.py"
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "app/**",
+          "data/**",
+          "run.py"
+        ]
+      }
     }
   ],
-  "functions": {
-    "api/index.py": {
-      "maxDuration": 60,
-      "includeFiles": "app/templates/**,data/**"
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
     }
-  }
+  ]
 }
